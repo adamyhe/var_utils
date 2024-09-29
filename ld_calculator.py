@@ -74,7 +74,7 @@ if __name__ == "__main__":
         "-i",
         "--input",
         type=str,
-        help="Text file with rsIDs to calculate LD",
+        help="Text file with rsIDs to calculate LD on",
         required=True,
     )
     parser.add_argument(
