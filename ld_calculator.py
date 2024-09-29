@@ -1,31 +1,66 @@
 import argparse
+import concurrent.futures
+import itertools
 import sys
 
 import requests
 import tqdm
 
 
-def main(snps, pop="CEU", threshold=0.8, metric="d_prime", wsize=200, verbose=False):
+def rest_api_call(snp, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
     server = "https://rest.ensembl.org"
-    return_list = []
+    ext = f"/ld/human/{snp}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
 
-    for snp in tqdm.tqdm(
-        snps, desc="Fetching LD data", total=len(snps), disable=not verbose
-    ):
-        ext = f"/ld/human/{snp}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
-        r = requests.get(server + ext, headers={"Content-Type": "application/json"})
-        if not r.ok:
-            r.raise_for_status()
-            sys.exit()
-        decoded = r.json()
-        return_list.extend([d["variation2"] for d in decoded])
+    r = requests.get(server + ext, headers={"Content-Type": "application/json"})
+    if not r.ok:
+        r.raise_for_status()
+        sys.exit()
 
-    unique_snps = list(set(return_list))
-    return unique_snps
+    decoded = r.json()
+    return [d["variation2"] for d in decoded]
+
+
+def main(
+    snps,
+    pop="CEU",
+    threshold=0.8,
+    metric="d_prime",
+    wsize=200,
+    nthreads=8,
+    verbose=False,
+):
+    if nthreads > 1:
+        params = zip(
+            [snp for snp in snps],
+            itertools.repeat(pop),
+            itertools.repeat(threshold),
+            itertools.repeat(metric),
+            itertools.repeat(wsize),
+        )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=nthreads) as executor:
+            results = list(
+                tqdm.tqdm(
+                    executor.map(lambda p: rest_api_call(*p), params),
+                    total=len(snps),
+                    disable=not verbose,
+                    desc="Calculating LD",
+                )
+            )
+    else:
+        results = []
+        for snp in tqdm.tqdm(
+            snps, disable=not verbose, desc="Calculating LD", total=len(snps)
+        ):
+            results.append(rest_api_call(snp, pop, threshold, metric, wsize))
+
+    flatten_dedup_results = list(set(itertools.chain.from_iterable(results)))
+    return flatten_dedup_results
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="A short script that uses the REST API to retrieve variants in LD with a provided list.")
+    parser = argparse.ArgumentParser(
+        description="A short script that uses the REST API to retrieve variants in LD with a provided list."
+    )
     parser.add_argument(
         "-s",
         "--snps",
@@ -34,11 +69,7 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="Output file to save LD SNPs (if not provided, prints to stdout)",
-        default=None,
+        "-o", "--output", type=str, help="Output file to save LD SNPs", required=True
     )
     parser.add_argument(
         "-p", "--pop", type=str, help="Population to calculate LD", default="CEU"
@@ -53,15 +84,17 @@ if __name__ == "__main__":
         "-w", "--wsize", type=int, help="Window size for LD (kb)", default=200
     )
     parser.add_argument(
-        "-v",
-        "--verbose",
-        help="print progress bar (disabled if -o not provided)",
-        action="store_true",
+        "-n", "--nthreads", type=int, help="Number of threads", default=1
+    )
+    parser.add_argument(
+        "-v", "--verbose", help="print progress bar", action="store_true"
     )
     args = parser.parse_args()
 
     with open(args.snps, "r") as f:
-        snps = f.read().splitlines()
+        snps = list(set(f.read().splitlines()))
+
+    print(f"Read {len(snps)} unique rsIDs from {args.snps}.")
 
     ld_snps = main(
         snps,
@@ -69,14 +102,9 @@ if __name__ == "__main__":
         args.threshold,
         args.metric,
         args.wsize,
-        args.verbose and args.output is not None,
+        args.nthreads,
+        args.verbose,
     )
-
-    if args.output:
-        with open(args.output, "w") as f:
-            for snp in ld_snps:
-                f.write(snp + "\n")
-
-    else:
+    with open(args.output, "w") as f:
         for snp in ld_snps:
-            print(snp)
+            f.write(snp + "\n")
