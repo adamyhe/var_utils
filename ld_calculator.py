@@ -64,7 +64,7 @@ def main(
 
 
 desc = """
-A short script to that uses the Ensembl REST API to fetch variants in LD with a provided
+A short script that uses the Ensembl REST API to fetch variants in LD with a provided
 list of variants.
 """
 
