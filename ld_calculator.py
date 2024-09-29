@@ -69,7 +69,7 @@ if __name__ == "__main__":
         args.threshold,
         args.metric,
         args.wsize,
-        args.verbose and args.output is None,
+        args.verbose and args.output is not None,
     )
 
     if args.output:
