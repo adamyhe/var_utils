@@ -49,7 +49,7 @@ def main(
     else:
         results = []
         for var in tqdm.tqdm(
-            in_var, disable=not verbose, desc="Calculating LD", total=len(snps)
+            in_var, disable=not verbose, desc="Calculating LD", total=len(in_var)
         ):
             results.append(rest_api_call(var, pop, threshold, metric, wsize))
 
@@ -58,8 +58,8 @@ def main(
 
 
 desc = """
-A short script to that uses the Ensembl REST API to fetch SNPs in LD with a provided
-list of SNPs.
+A short script to that uses the Ensembl REST API to fetch variants in LD with a provided
+list of variants.
 """
 
 if __name__ == "__main__":
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "-o", "--output", type=str, help="Output file to save LD SNPs", required=True
+        "-o", "--output", type=str, help="Output file to save LD variants", required=True
     )
     parser.add_argument(
         "-p", "--pop", type=str, help="Population to calculate LD", default="CEU"
