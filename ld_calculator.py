@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-v",
         "--verbose",
-        help="print progress bar (disabled if -o provided)",
+        help="print progress bar (disabled if -o not provided)",
         action="store_true",
     )
     args = parser.parse_args()
