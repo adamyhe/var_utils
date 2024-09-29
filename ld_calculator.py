@@ -25,7 +25,7 @@ def main(snps, pop="CEU", threshold=0.8, metric="d_prime", wsize=200, verbose=Fa
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(desc="A short script that uses the REST API to retrieve variants in LD with a provided list.")
+    parser = argparse.ArgumentParser(description="A short script that uses the REST API to retrieve variants in LD with a provided list.")
     parser.add_argument(
         "-s",
         "--snps",
