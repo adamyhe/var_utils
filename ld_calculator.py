@@ -7,9 +7,9 @@ import requests
 import tqdm
 
 
-def rest_api_call(snp, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
+def rest_api_call(var, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
     server = "https://rest.ensembl.org"
-    ext = f"/ld/human/{snp}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
+    ext = f"/ld/human/{var}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
 
     r = requests.get(server + ext, headers={"Content-Type": "application/json"})
     if not r.ok:
@@ -21,7 +21,7 @@ def rest_api_call(snp, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
 
 
 def main(
-    snps,
+    in_var,
     pop="CEU",
     threshold=0.8,
     metric="d_prime",
@@ -31,7 +31,7 @@ def main(
 ):
     if nthreads > 1:
         params = zip(
-            [snp for snp in snps],
+            [var for var in in_var],
             itertools.repeat(pop),
             itertools.repeat(threshold),
             itertools.repeat(metric),
@@ -41,29 +41,32 @@ def main(
             results = list(
                 tqdm.tqdm(
                     executor.map(lambda p: rest_api_call(*p), params),
-                    total=len(snps),
+                    total=len(in_var),
                     disable=not verbose,
                     desc="Calculating LD",
                 )
             )
     else:
         results = []
-        for snp in tqdm.tqdm(
-            snps, disable=not verbose, desc="Calculating LD", total=len(snps)
+        for var in tqdm.tqdm(
+            in_var, disable=not verbose, desc="Calculating LD", total=len(snps)
         ):
-            results.append(rest_api_call(snp, pop, threshold, metric, wsize))
+            results.append(rest_api_call(var, pop, threshold, metric, wsize))
 
     flatten_dedup_results = list(set(itertools.chain.from_iterable(results)))
     return flatten_dedup_results
 
 
+desc = """
+A short script to that uses the Ensembl REST API to fetch SNPs in LD with a provided
+list of SNPs.
+"""
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="A short script that uses the REST API to retrieve variants in LD with a provided list."
-    )
+    parser = argparse.ArgumentParser(description=desc)
     parser.add_argument(
-        "-s",
-        "--snps",
+        "-i",
+        "--input",
         type=str,
         help="Text file with rsIDs to calculate LD",
         required=True,
@@ -91,13 +94,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    with open(args.snps, "r") as f:
-        snps = list(set(f.read().splitlines()))
+    with open(args.input, "r") as f:
+        in_var = list(set(f.read().splitlines()))
 
-    print(f"Read {len(snps)} unique rsIDs from {args.snps}.")
+    print(f"Read {len(snps)} unique rsIDs from {args.input}.")
 
-    ld_snps = main(
-        snps,
+    out_var = main(
+        in_var,
         args.pop,
         args.threshold,
         args.metric,
@@ -106,5 +109,5 @@ if __name__ == "__main__":
         args.verbose,
     )
     with open(args.output, "w") as f:
-        for snp in ld_snps:
+        for var in in_var:
             f.write(snp + "\n")
