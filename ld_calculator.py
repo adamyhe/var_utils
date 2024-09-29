@@ -8,14 +8,17 @@ import tqdm
 
 
 def rest_api_call(var, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
+    # generate request
     server = "https://rest.ensembl.org"
     ext = f"/ld/human/{var}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
 
+    # send request
     r = requests.get(server + ext, headers={"Content-Type": "application/json"})
     if not r.ok:
         r.raise_for_status()
         sys.exit()
 
+    # parse results for variant IDs and return
     decoded = r.json()
     return [d["variation2"] for d in decoded]
 
@@ -29,6 +32,7 @@ def main(
     nthreads=8,
     verbose=False,
 ):
+    # async multithreading of API calls
     if nthreads > 1:
         params = zip(
             [var for var in in_var],
@@ -46,6 +50,7 @@ def main(
                     desc="Calculating LD",
                 )
             )
+    # or just run in for loop if nthreads == 1
     else:
         results = []
         for var in tqdm.tqdm(
@@ -53,6 +58,7 @@ def main(
         ):
             results.append(rest_api_call(var, pop, threshold, metric, wsize))
 
+    # consolidate results and return
     flatten_dedup_results = list(set(itertools.chain.from_iterable(results)))
     return flatten_dedup_results
 
