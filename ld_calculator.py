@@ -10,7 +10,7 @@ def main(snps, pop="CEU", threshold=0.8, metric="d_prime", wsize=200, verbose=Fa
     return_list = []
 
     for snp in tqdm.tqdm(
-        snps, desc="Fetching LD data", total=len(snps), verbose=verbose
+        snps, desc="Fetching LD data", total=len(snps), disable=not verbose
     ):
         ext = f"/ld/human/{snp}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
         r = requests.get(server + ext, headers={"Content-Type": "application/json"})
