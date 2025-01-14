@@ -104,7 +104,11 @@ if __name__ == "__main__":
         in_var = list(set(f.read().splitlines()))
 
     print(f"Read {len(in_var)} unique rsIDs from {args.input}.")
-
+    print(
+        f"Filtering for variants in LD "
+        f"({args.metric} > {args.threshhold}, distance < {args.wsize}, population={args.pop})."
+    )
+    
     out_var = main(
         in_var,
         args.pop,
@@ -114,6 +118,8 @@ if __name__ == "__main__":
         args.nthreads,
         args.verbose,
     )
+
+    print(f"Retrived {len(out_var)} unique rsIDs in LD.")
     with open(args.output, "w") as f:
         for var in out_var:
             f.write(var + "\n")
