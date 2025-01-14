@@ -106,7 +106,7 @@ if __name__ == "__main__":
     print(f"Read {len(in_var)} unique rsIDs from {args.input}.")
     print(
         f"Filtering for variants in LD "
-        f"({args.metric} > {args.threshhold}, distance < {args.wsize}, population={args.pop})."
+        f"({args.metric} > {args.threshold}, distance < {args.wsize}, population={args.pop})."
     )
     
     out_var = main(
