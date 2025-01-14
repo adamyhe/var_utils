@@ -103,7 +103,7 @@ if __name__ == "__main__":
     with open(args.input, "r") as f:
         in_var = list(set(f.read().splitlines()))
 
-    print(f"Read {len(snps)} unique rsIDs from {args.input}.")
+    print(f"Read {len(in_var)} unique rsIDs from {args.input}.")
 
     out_var = main(
         in_var,
