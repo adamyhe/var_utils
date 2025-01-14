@@ -115,5 +115,5 @@ if __name__ == "__main__":
         args.verbose,
     )
     with open(args.output, "w") as f:
-        for var in in_var:
+        for var in out_var:
             f.write(var + "\n")
