@@ -37,7 +37,7 @@ out_df["alt"] = [
 ]
 
 # Filter out SNPs with more than 2 alleles
-out_df = out_df[pd.to_numeric(freqs[2]).isnull()]
+#out_df = out_df[pd.to_numeric(freqs[2]).isnull()]
 # Clean nans
 out_df.dropna(inplace=True)
 # Write output
