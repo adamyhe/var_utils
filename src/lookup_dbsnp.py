@@ -51,18 +51,15 @@ def main():
     args = parser.parse_args()
 
     # Determine temporary file path
-    if os.path.isfile(args.tmp):
+    rand_string = "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    if args.tmp is None:
+        tmp = f"./lookup_dbsnp_alleles_tmp.{rand_string}.txt"
+    elif os.path.isfile(args.tmp):
         tmp = args.tmp
+    elif os.path.isdir(args.tmp):
+        tmp = os.path.join(args.tmp, f"lookup_dbsnp_alleles_tmp.{rand_string}.txt")
     else:
-        rand_string = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=8)
-        )
-        if os.path.isdir(args.tmp):
-            tmp = os.path.join(args.tmp, f"lookup_dbsnp_alleles_tmp.{rand_string}.txt")
-        elif args.tmp is None:
-            tmp = f"./lookup_dbsnp_alleles_tmp.{rand_string}.txt"
-        else:
-            raise ValueError(f"Invalid tmp argument: {args.tmp}")
+        raise ValueError(f"Invalid tmp argument: {args.tmp}")
 
     # Filter dbSNP text file using rsIDs and keep only SNPs on autosomes
     subprocess.run(
