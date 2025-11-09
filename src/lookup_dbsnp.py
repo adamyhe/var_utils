@@ -3,7 +3,8 @@
 
 """
 Script to fetch coordinates and allele information from a UCSC dbSNP file for
-a given list of rsIDs
+a given list of rsIDs. For hg38, download from
+https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/snp151.txt.gz
 """
 
 import argparse
@@ -30,7 +31,7 @@ def main():
         "-d",
         "--dbsnp",
         type=str,
-        help="Path to gzipped UCSC dbSNP file. (e.g. https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/snp151.txt.gz)",
+        help="Path to gzipped UCSC dbSNP file.",
         required=True,
     )
     parser.add_argument(
