@@ -1,3 +1,11 @@
+# ld_fetch.py
+# Author: Adam Youlin He <adamyhe@gmail.com>
+
+"""
+A short script that uses the Ensembl REST API to fetch variants in LD with a provided
+list of variants.
+"""
+
 import argparse
 import concurrent.futures
 import itertools
@@ -8,6 +16,27 @@ import tqdm
 
 
 def rest_api_call(var, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
+    """
+    Function to make API call to Ensembl REST API
+
+    Parameters
+    ----------
+    var : str
+        rsID to calculate LD on
+    pop : str, optional
+        Population to calculate LD, by default "CEU"
+    threshold : float, optional
+        Threshold for LD, by default 0.8
+    metric : str, optional
+        Metric for LD, by default "d_prime"
+    wsize : int, optional
+        Window size for LD (kb), by default 200
+
+    Returns
+    -------
+    list
+        List of variant IDs
+    """
     # generate request
     server = "https://rest.ensembl.org"
     ext = f"/ld/human/{var}/1000GENOMES:phase_3:{pop}?{metric}={threshold};window_size={wsize}"
@@ -23,7 +52,7 @@ def rest_api_call(var, pop="CEU", threshold=0.8, metric="d_prime", wsize=200):
     return [d["variation2"] for d in decoded]
 
 
-def main(
+def caller(
     in_var,
     pop="CEU",
     threshold=0.8,
@@ -32,6 +61,32 @@ def main(
     nthreads=8,
     verbose=False,
 ):
+    """
+    Wrapper function for rest_api_call that handles multithreading of API calls
+    over a list of variants
+
+    Parameters
+    ----------
+    in_var : list
+        List of rsIDs to calculate LD on
+    pop : str, optional
+        Population to calculate LD, by default "CEU"
+    threshold : float, optional
+        Threshold for LD, by default 0.8
+    metric : str, optional
+        Metric for LD, by default "d_prime"
+    wsize : int, optional
+        Window size for LD (kb), by default 200
+    nthreads : int, optional
+        Number of threads, by default 8
+    verbose : bool, optional
+        print progress bar, by default False
+
+    Returns
+    -------
+    list
+        List of deduplicated variant IDs from API calls
+    """
     # async multithreading of API calls
     if nthreads > 1:
         params = zip(
@@ -63,13 +118,10 @@ def main(
     return flatten_dedup_results
 
 
-desc = """
-A short script that uses the Ensembl REST API to fetch variants in LD with a provided
-list of variants.
-"""
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=desc)
+def main():
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument(
         "-i",
         "--input",
@@ -78,7 +130,11 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "-o", "--output", type=str, help="Output file to save LD variants", required=True
+        "-o",
+        "--output",
+        type=str,
+        help="Output file to save LD variants",
+        required=True,
     )
     parser.add_argument(
         "-p", "--pop", type=str, help="Population to calculate LD", default="CEU"
@@ -108,8 +164,8 @@ if __name__ == "__main__":
         f"Filtering for variants in LD "
         f"({args.metric} > {args.threshold}, distance < {args.wsize}, population={args.pop})."
     )
-    
-    out_var = main(
+
+    out_var = caller(
         in_var,
         args.pop,
         args.threshold,
@@ -123,3 +179,7 @@ if __name__ == "__main__":
     with open(args.output, "w") as f:
         for var in out_var:
             f.write(var + "\n")
+
+
+if __name__ == "__main__":
+    main()
