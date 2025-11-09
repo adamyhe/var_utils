@@ -15,5 +15,5 @@ requires-python = ">= 3.9"
 dependencies = ["pandas", "tqdm", "requests"]
 
 [project.scripts]
-ld_fetch = "var_utils:ld_fetch:main"
-lookup_dbsnp = "var_utils:lookup_dbsnp:main"
+ld_fetch = "ld_fetch:main"
+lookup_dbsnp = "lookup_dbsnp:main"
