@@ -27,9 +27,15 @@ def main():
     )
     parser.add_argument("-f", "--fasta", type=str, required=True)
     parser.add_argument("-o", "--output", type=str, required=True)
-    parser.add_argument("-w", "--in_window", type=int, default=2114)
-    parser.add_argument("-a", "--allowed_chars", type=str, default="ACGT")
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument(
+        "-w", "--in_window", type=int, default=2114, help="Window size to check"
+    )
+    parser.add_argument(
+        "-a", "--allowed_chars", type=str, default="ACGT", help="Allowed characters"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Whether to print progress bar"
+    )
     args = parser.parse_args()
 
     # Read in sequences around SNPs
