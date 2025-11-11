@@ -11,7 +11,7 @@ pip install git+https://github.com/adamyhe/var_utils.git
 ## ld_fetch
 
 This tool uses the Ensembl REST API to fetch variants in LD with a provided
-list of variants based on 1K Genomes populations. It can launch multiple API calls at once to reduce runtime. NOTE: you should probably use a relatively small number still (e.g., <0.8) to avoid getting in trouble with Ensembl sysadmins.
+list of variants based on 1K Genomes populations. It can launch multiple API calls at once to reduce runtime. NOTE: you should probably use a relatively small number still (e.g., <=8) to avoid getting in trouble with Ensembl sysadmins.
 
 ```bash
 ld_fetch -h
