@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "var_utils"
-version = "0.0.2"
+version = "0.1.0"
 description = """
 A collection of small command line tools for handling genetic variants.
 """
@@ -12,7 +12,7 @@ authors = [{ name = "Adam He", email = "adamyhe@gmail.com" }]
 license = { file = "LICENSE" }
 urls = { homepage = "https://github.com/adamyhe/var_utils" }
 requires-python = ">= 3.9"
-dependencies = ["pandas", "tqdm", "requests"]
+dependencies = ["pandas", "tqdm", "requests", "pyfastx"]
 
 [tool.setuptools]
 packages = ["src"]
@@ -20,3 +20,4 @@ packages = ["src"]
 [project.scripts]
 ld_fetch = "src.ld_fetch:main"
 lookup_dbsnp = "src.lookup_dbsnp:main"
+cleanup_dbsnp = "src.cleanup_dbsnp:main"
