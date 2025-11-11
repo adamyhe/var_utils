@@ -20,4 +20,4 @@ packages = ["src"]
 [project.scripts]
 ld_fetch = "src.ld_fetch:main"
 lookup_dbsnp = "src.lookup_dbsnp:main"
-cleanup_dbsnp = "src.cleanup_dbsnp:main"
+cleanup_snps = "src.cleanup_snps:main"
