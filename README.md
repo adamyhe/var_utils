@@ -33,5 +33,5 @@ This tool cleans up a tsv containing SNPs of interest (excludes all SNPs that co
 
 ```bash
 cleanup_snps -h
-cleanup_snps --input snps.tsv --fasta genome.fna --output [--in_window 2114 --allowed_chars ACGT --verbose]
+cleanup_snps --input snps.tsv --fasta genome.fna --output snps_ACGT.tsv [--in_window 2114 --allowed_chars ACGT --verbose]
 ```
