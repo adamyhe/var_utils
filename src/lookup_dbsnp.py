@@ -15,7 +15,6 @@ import string
 import subprocess
 
 import pandas as pd
-import tqdm
 
 
 def main():
@@ -96,8 +95,6 @@ def main():
             "pos": df[2],
             "rsid": df[4],
             "ref": df[8],
-            "ref_freq": pd.to_numeric(freqs[0]),
-            "alt_freq": pd.to_numeric(freqs[1]),
         }
     )
     snps = df[22].str.split(",", expand=True)
@@ -106,7 +103,23 @@ def main():
     snps = df[22].str.split(",", expand=True)[is_biallelic]
     out_df["alt"] = [
         (snps[0].iloc[i] if snps[0].iloc[i] != out_df.ref.iloc[i] else snps[1].iloc[i])
-        for i in tqdm.trange(snps.shape[0])
+        for i in range(snps.shape[0])
+    ]
+    out_df["ref_freq"] = [
+        (
+            float(freqs[0].iloc[i])
+            if snps[0].iloc[i] == out_df.ref.iloc[i]
+            else float(freqs[1].iloc[i])
+        )
+        for i in range(snps.shape[0])
+    ]
+    out_df["alt_freq"] = [
+        (
+            float(freqs[1].iloc[i])
+            if snps[0].iloc[i] == out_df.ref.iloc[i]
+            else float(freqs[0].iloc[i])
+        )
+        for i in range(snps.shape[0])
     ]
 
     # Clean nans
