@@ -29,9 +29,18 @@ lookup_dbsnp --input rsids.txt --dbsnp snp151.txt.gz --output snp_data.tsv.gz [-
 
 ## cleanup_snps
 
-This tool cleans up a tsv containing SNPs of interest (excludes all SNPs that contain non-ACGT characters nearby and will cause edge run-over).
+This tool cleans up a tsv containing variants of interest (excludes all variants that contain non-ACGT characters nearby and will cause edge run-over).
 
 ```bash
 cleanup_snps -h
 cleanup_snps --input snps.tsv --fasta genome.fna --output snps_ACGT.tsv [--in_window 2114 --allowed_chars ACGT --verbose]
+```
+
+## match_allele_frequency
+
+This tool samples a background variant set to match the allele frequency distribution of a target set of variants. Specifically, it bins the variants by MAF, then randomly samples matching counts of background variants.
+
+```bash
+match_allele_frequency -h
+match_allele_frequency --df_target target_snps.tsv --df_background background_snps.tsv --output matched_snps.tsv [--frequency_bin_size 0.01 --random_seed 47 --verbose]
 ```

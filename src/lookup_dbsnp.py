@@ -8,12 +8,14 @@ https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/snp151.txt.gz
 """
 
 import argparse
+import logging
 import os
 import random
 import string
 import subprocess
 
 import pandas as pd
+import tqdm
 
 
 def main():
@@ -48,7 +50,20 @@ def main():
         default=None,
         help="Temporary file path to store intermediate results.",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Print logging messages.",
+    )
     args = parser.parse_args()
+
+    # Set up logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     # Determine temporary file path
     rand_string = "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
@@ -62,12 +77,16 @@ def main():
         raise ValueError(f"Invalid tmp argument: {args.tmp}")
 
     # Filter dbSNP text file using rsIDs and keep only SNPs on autosomes
+    if args.verbose:
+        logging.info("Filtering dbSNP file for desired rsIDs...")
     subprocess.run(
         f"zgrep -wf {args.input} {args.dbsnp} | awk '$2 ~ /^chr[0-9]+$/' > {tmp}",
         shell=True,
     )
 
     # Parse filtered dbSNP file and extract relevant columns
+    if args.verbose:
+        logging.info("Parsing filtered dbSNP file and extracting relevant columns...")
     df = pd.read_csv(tmp, sep="\t", header=None)
     df = df[df[11] == "single"]
     freqs = df[24].str.split(",", expand=True)
@@ -82,9 +101,12 @@ def main():
         }
     )
     snps = df[22].str.split(",", expand=True)
+    is_biallelic = out_df["ref_freq"] + out_df["alt_freq"] == 1
+    out_df = out_df[is_biallelic]
+    snps = df[22].str.split(",", expand=True)[is_biallelic]
     out_df["alt"] = [
         (snps[0].iloc[i] if snps[0].iloc[i] != out_df.ref.iloc[i] else snps[1].iloc[i])
-        for i in range(snps.shape[0])
+        for i in tqdm.trange(snps.shape[0])
     ]
 
     # Clean nans
@@ -93,6 +115,8 @@ def main():
     out_df.to_csv(args.output, sep="\t", index=False)
     # Clean up tmp file
     subprocess.run(f"rm {tmp}", shell=True)
+    if args.verbose:
+        logging.info(f"Saved output to {args.output}")
 
 
 if __name__ == "__main__":

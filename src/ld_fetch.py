@@ -9,6 +9,7 @@ list of variants.
 import argparse
 import concurrent.futures
 import itertools
+import logging
 import sys
 
 import requests
@@ -156,14 +157,21 @@ def main():
     )
     args = parser.parse_args()
 
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
     with open(args.input, "r") as f:
         in_var = list(set(f.read().splitlines()))
 
-    print(f"Read {len(in_var)} unique rsIDs from {args.input}.")
-    print(
-        f"Filtering for variants in LD "
-        f"({args.metric} > {args.threshold}, distance < {args.wsize}, population={args.pop})."
-    )
+    if args.verbose:
+        logging.info(f"Read {len(in_var)} unique rsIDs from {args.input}.")
+        logging.info(
+            f"Filtering for variants in LD "
+            f"({args.metric} > {args.threshold}, distance < {args.wsize}, population={args.pop})."
+        )
 
     out_var = caller(
         in_var,
@@ -175,10 +183,14 @@ def main():
         args.verbose,
     )
 
-    print(f"Retrived {len(out_var)} unique rsIDs in LD.")
     with open(args.output, "w") as f:
         for var in out_var:
             f.write(var + "\n")
+
+    if args.verbose:
+        logging.info(
+            f"Retrieved {len(out_var)} unique rsIDs in LD and saved to {args.output}."
+        )
 
 
 if __name__ == "__main__":

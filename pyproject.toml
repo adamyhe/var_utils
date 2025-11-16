@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "var_utils"
-version = "0.1.1"
+version = "0.2.0"
 description = """
 A collection of small command line tools for handling genetic variants.
 """
@@ -21,3 +21,4 @@ packages = ["src"]
 ld_fetch = "src.ld_fetch:main"
 lookup_dbsnp = "src.lookup_dbsnp:main"
 cleanup_snps = "src.cleanup_snps:main"
+match_allele_frequency = "src.match_allele_frequency:main"
