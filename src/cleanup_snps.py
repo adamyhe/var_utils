@@ -39,10 +39,10 @@ def main():
     args = parser.parse_args()
 
     # Read in sequences around SNPs
-    snps = pd.read_csv(args.snps_tsv, sep="\t")
+    snps = pd.read_csv(args.input, sep="\t")
     coords = snps[["chrom", "pos"]].copy()
     coords["end"] = coords["pos"] + 1
-    fa = pyfastx.Fasta(args.fa_fname)
+    fa = pyfastx.Fasta(args.fasta)
     wholesome = []
     for row in tqdm.tqdm(
         snps.itertuples(), total=snps.shape[0], disable=not args.verbose
@@ -65,7 +65,7 @@ def main():
     )
     snps = snps[wholesome]
     snps.reset_index(drop=True, inplace=True)
-    snps.to_csv(args.out_tsv, sep="\t", index=False)
+    snps.to_csv(args.output, sep="\t", index=False)
 
 
 if __name__ == "__main__":
