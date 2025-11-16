@@ -98,9 +98,6 @@ def main():
         }
     )
     snps = df[22].str.split(",", expand=True)
-    is_biallelic = out_df["ref_freq"] + out_df["alt_freq"] == 1
-    out_df = out_df[is_biallelic]
-    snps = df[22].str.split(",", expand=True)[is_biallelic]
     out_df["alt"] = [
         (snps[0].iloc[i] if snps[0].iloc[i] != out_df.ref.iloc[i] else snps[1].iloc[i])
         for i in range(snps.shape[0])
@@ -121,6 +118,8 @@ def main():
         )
         for i in range(snps.shape[0])
     ]
+    is_biallelic = out_df["ref_freq"] + out_df["alt_freq"] == 1
+    out_df = out_df[is_biallelic]
 
     # Clean nans
     out_df.dropna(inplace=True)
