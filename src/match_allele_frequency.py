@@ -99,6 +99,8 @@ def main():
 
     # Concatenate sampled SNPs
     df_matched = pd.concat(matched)
+    df_matched.drop(columns=["bin"], inplace=True)
+    df_matched.sort_values(["chrom", "pos"], inplace=True)
 
     # Save matched SNPs
     df_matched.to_csv(args.output, sep="\t", index=False)

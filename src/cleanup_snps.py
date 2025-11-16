@@ -40,6 +40,7 @@ def main():
 
     # Read in sequences around SNPs
     snps = pd.read_csv(args.input, sep="\t")
+    snps.sort_values(["chrom", "pos"], inplace=True)
     coords = snps[["chrom", "pos"]].copy()
     coords["end"] = coords["pos"] + 1
     fa = pyfastx.Fasta(args.fasta)
