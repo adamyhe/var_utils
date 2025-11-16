@@ -16,6 +16,13 @@ import subprocess
 
 import pandas as pd
 
+complement = {
+    "A": "T",
+    "T": "A",
+    "C": "G",
+    "G": "C",
+}
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -65,7 +72,9 @@ def main():
     )
 
     # Determine temporary file path
-    rand_string = "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    rand_string = "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=8)
+    )
     if args.tmp is None:
         tmp = f"./lookup_dbsnp_alleles_tmp.{rand_string}.txt"
     elif os.path.isfile(args.tmp):
@@ -90,34 +99,46 @@ def main():
     df = df[df[11] == "single"]
     freqs = df[24].str.split(",", expand=True)
     out_df = pd.DataFrame(
-        {
-            "chrom": df[1],
-            "pos": df[2],
-            "rsid": df[4],
-            "ref": df[8],
-        }
+        {"chrom": df[1], "pos": df[2], "rsid": df[4], "ref": df[7], "strand": df[6]}
     )
     snps = df[22].str.split(",", expand=True)
-    out_df["alt"] = [
-        (snps[0].iloc[i] if snps[0].iloc[i] != out_df.ref.iloc[i] else snps[1].iloc[i])
-        for i in range(snps.shape[0])
-    ]
-    out_df["ref_freq"] = [
-        (
-            float(freqs[0].iloc[i])
-            if snps[0].iloc[i] == out_df.ref.iloc[i]
-            else float(freqs[1].iloc[i])
+    # complement if out_df["strand"] == "-"
+    alts = []
+    which = []
+    for i in range(snps.shape[0]):
+        if out_df["strand"].iloc[i] == "+":
+            if out_df["ref"].iloc[i] != snps[0].iloc[i]:
+                alts.append(snps[0].iloc[i])
+                which.append(0)
+            else:
+                alts.append(snps[1].iloc[i])
+                which.append(1)
+        elif out_df["strand"].iloc[i] == "-":
+            if out_df["ref"].iloc[i] != complement[snps[0].iloc[i]]:
+                alts.append(complement[snps[0].iloc[i]])
+                which.append(0)
+            else:
+                alts.append(complement[snps[1].iloc[i]])
+                which.append(1)
+        else:
+            raise ValueError(f"Invalid strand: {out_df['strand'].iloc[i]}")
+    out_df["alt"] = alts
+    out_df["alt_freq"] = pd.to_numeric(
+        pd.Series(
+            [
+                (freqs[0].iloc[i] if which[i] == 0 else freqs[1].iloc[i])
+                for i in range(snps.shape[0])
+            ]
         )
-        for i in range(snps.shape[0])
-    ]
-    out_df["alt_freq"] = [
-        (
-            float(freqs[1].iloc[i])
-            if snps[0].iloc[i] == out_df.ref.iloc[i]
-            else float(freqs[0].iloc[i])
+    )
+    out_df["ref_freq"] = pd.to_numeric(
+        pd.Series(
+            [
+                (freqs[1].iloc[i] if which[i] == 0 else freqs[0].iloc[i])
+                for i in range(snps.shape[0])
+            ]
         )
-        for i in range(snps.shape[0])
-    ]
+    )
     is_biallelic = out_df["ref_freq"] + out_df["alt_freq"] == 1
     out_df = out_df[is_biallelic]
 
