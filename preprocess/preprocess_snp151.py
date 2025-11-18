@@ -8,7 +8,7 @@ import tqdm
 
 # Filter dbSNP text file using rsIDs and keep only SNPs on autosomes
 subprocess.run(
-    "zcat snp151.txt.gz | awk '$2 ~ /^chr[0-9]+$/' | awk -F'\t' '$22' | pigz > snp151.wfreqs.txt.gz",
+    "zcat snp151.txt.gz | awk '$2 ~ /^chr[0-9]+$/' | awk -F'\t' '$22' | grep -v 'RefAlleleMismatch' | pigz > snp151.wfreqs.txt.gz",
     shell=True,
 )
 
