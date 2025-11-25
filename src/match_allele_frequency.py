@@ -83,7 +83,7 @@ def main():
     # Bin SNPs by frequency
     bins = np.arange(0, 1 + args.frequency_bin_size / 10, args.frequency_bin_size)
     df_target["bin"] = pd.cut(df_target["ref_freq"], bins=bins, include_lowest=True)
-    df_bg["bin"] = pd.cut(df_bg["alt_freq"], bins=bins, include_lowest=True)
+    df_bg["bin"] = pd.cut(df_bg["ref_freq"], bins=bins, include_lowest=True)
 
     # Sample SNPs by frequency
     matched = []
