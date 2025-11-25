@@ -87,8 +87,8 @@ def main():
     if args.verbose:
         logging.info(f"Loaded {len(df_bg)} background SNPs")
 
-    # Exclude df_target rsIDs from df_bg
-    df_bg = df_bg[~df_bg["rsID"].isin(df_target["rsID"])]
+    # Exclude df_target rsids from df_bg
+    df_bg = df_bg[~df_bg["rsid"].isin(df_target["rsid"])]
 
     # Bin SNPs by frequency
     bins = np.arange(0, 1 + args.frequency_bin_size / 10, args.frequency_bin_size)
