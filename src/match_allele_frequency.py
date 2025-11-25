@@ -47,6 +47,13 @@ def main():
         help="Size of bins to group SNP frequencies by.",
     )
     parser.add_argument(
+        "-r",
+        "--ratio",
+        type=int,
+        default=1,
+        help="Ratio of background SNPs to target SNPs.",
+    )
+    parser.add_argument(
         "-s",
         "--random_seed",
         type=int,
@@ -80,6 +87,9 @@ def main():
     if args.verbose:
         logging.info(f"Loaded {len(df_bg)} background SNPs")
 
+    # Exclude df_target rsIDs from df_bg
+    df_bg = df_bg[~df_bg["rsID"].isin(df_target["rsID"])]
+
     # Bin SNPs by frequency
     bins = np.arange(0, 1 + args.frequency_bin_size / 10, args.frequency_bin_size)
     df_target["bin"] = pd.cut(df_target["ref_freq"], bins=bins, include_lowest=True)
@@ -94,7 +104,7 @@ def main():
     ):
         n = sum(df_target["bin"] == b)
         pool = df_bg[df_bg["bin"] == b]
-        sampled = pool.sample(n, replace=False)
+        sampled = pool.sample(n * args.ratio, replace=False)
         matched.append(sampled)
 
     # Concatenate sampled SNPs
