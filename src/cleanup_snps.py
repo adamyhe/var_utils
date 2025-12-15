@@ -41,18 +41,14 @@ def main():
     # Read in sequences around SNPs
     snps = pd.read_csv(args.input, sep="\t")
     snps.sort_values(["chrom", "pos"], inplace=True)
-    coords = snps[["chrom", "pos"]].copy()
-    coords["end"] = coords["pos"] + 1
     fa = pyfastx.Fasta(args.fasta)
     wholesome = []
     for row in tqdm.tqdm(
-        coords.itertuples(), total=snps.shape[0], disable=not args.verbose
+        snps.itertuples(), total=snps.shape[0], disable=not args.verbose
     ):
-        chrom = row[0]
-        center = row[1]
-        start = max(0, center - args.in_window // 2)
-        end = center + args.in_window // 2 - 1  # pyfastx includes the end
-        seq = fa.fetch(chrom, (start, end)).upper()
+        start = max(0, row["start"] - args.in_window // 2)
+        end = row["start"] + args.in_window // 2 - 1  # pyfastx includes the end
+        seq = fa.fetch(row["chrom"], (start, end)).upper()
         is_wholesome = (
             all([c in args.allowed_chars for c in seq]) and len(seq) == args.in_window
         )
