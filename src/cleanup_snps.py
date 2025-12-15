@@ -46,10 +46,10 @@ def main():
     fa = pyfastx.Fasta(args.fasta)
     wholesome = []
     for row in tqdm.tqdm(
-        snps.itertuples(), total=snps.shape[0], disable=not args.verbose
+        coords.itertuples(), total=snps.shape[0], disable=not args.verbose
     ):
-        chrom = row[1]
-        center = row[2]
+        chrom = row[0]
+        center = row[1]
         start = max(0, center - args.in_window // 2)
         end = center + args.in_window // 2 - 1  # pyfastx includes the end
         seq = fa.fetch(chrom, (start, end)).upper()
