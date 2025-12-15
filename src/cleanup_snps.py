@@ -46,9 +46,9 @@ def main():
     for row in tqdm.tqdm(
         snps.itertuples(), total=snps.shape[0], disable=not args.verbose
     ):
-        start = max(0, row["start"] - args.in_window // 2)
-        end = row["start"] + args.in_window // 2 - 1  # pyfastx includes the end
-        seq = fa.fetch(row["chrom"], (start, end)).upper()
+        start = max(0, int(row["start"]) - args.in_window // 2)
+        end = int(row["start"]) + args.in_window // 2 - 1  # pyfastx includes the end
+        seq = fa.fetch(str(row["chrom"]), (start, end)).upper()
         is_wholesome = (
             all([c in args.allowed_chars for c in seq]) and len(seq) == args.in_window
         )
