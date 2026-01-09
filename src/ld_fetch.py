@@ -9,6 +9,7 @@ list of variants.
 import argparse
 import concurrent.futures
 import itertools
+import json
 import logging
 import sys
 
@@ -106,17 +107,18 @@ def caller(
                     desc="Calculating LD",
                 )
             )
+            results = dict(zip(in_var, results))
     # or just run in for loop if nthreads == 1
     else:
-        results = []
+        results = {}
         for var in tqdm.tqdm(
             in_var, disable=not verbose, desc="Calculating LD", total=len(in_var)
         ):
-            results.append(rest_api_call(var, pop, threshold, metric, wsize))
+            results[var] = rest_api_call(var, pop, threshold, metric, wsize)
 
     # consolidate results and return
-    flatten_dedup_results = list(set(itertools.chain.from_iterable(results)))
-    return flatten_dedup_results
+    flatten_dedup_results = list(set(itertools.chain.from_iterable(results.values())))
+    return results, flatten_dedup_results
 
 
 def main():
@@ -136,6 +138,13 @@ def main():
         type=str,
         help="Output file to save LD variants",
         required=True,
+    )
+    parser.add_argument(
+        "-a",
+        "--haplotype",
+        type=str,
+        default=None,
+        help="Output file to save haplotypes to (json with lead variant as key and list of LD variants as value)",
     )
     parser.add_argument(
         "-p", "--pop", type=str, help="Population to calculate LD", default="CEU"
@@ -173,7 +182,7 @@ def main():
             f"({args.metric} > {args.threshold}, distance < {args.wsize}, population={args.pop})."
         )
 
-    out_var = caller(
+    results_hash, results_list = caller(
         in_var,
         args.pop,
         args.threshold,
@@ -184,12 +193,16 @@ def main():
     )
 
     with open(args.output, "w") as f:
-        for var in out_var:
+        for var in results_list:
             f.write(var + "\n")
+
+    if args.haplotype:
+        with open(args.haplotype, "w") as f:
+            json.dump(results_hash, f, indent=4)
 
     if args.verbose:
         logging.info(
-            f"Retrieved {len(out_var)} unique rsIDs in LD and saved to {args.output}."
+            f"Retrieved {len(results_list)} unique rsIDs in LD and saved to {args.output}."
         )
 
 
