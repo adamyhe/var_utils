@@ -139,7 +139,7 @@ def main():
             ]
         )
     )
-    is_biallelic = out_df["ref_freq"] + out_df["alt_freq"] == 1
+    is_biallelic = np.isclose(out_df["ref_freq"] + out_df["alt_freq"], 1.0, atol=1e-6, rtol=0)
     out_df = out_df[is_biallelic]
 
     # Clean nans
