@@ -13,6 +13,7 @@ import os
 import random
 import string
 import subprocess
+import numpy as np
 
 import pandas as pd
 
